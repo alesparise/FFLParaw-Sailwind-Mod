@@ -25,7 +25,6 @@ namespace FFLParawScripts
             outrigger = GetComponentInParent<Outrigger>();
             foam = transform.Find("WaterFoam").gameObject;
         }
-
         public void Update()
         {
             if ((bool)pbs && pbs.performanceModeIsOn())

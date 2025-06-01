@@ -20,11 +20,13 @@ namespace FFLParaw
 
         //config file info
         public static ConfigEntry<bool> saveCleanerConfig;
+        public static ConfigEntry<bool> invertedTillerConfig;
 
         public void Awake()
         {
             //CONFIG FILE
             saveCleanerConfig = Config.Bind("A) Various Settings", "Save Cleaner", false, "Removes the saves dependency on this mod. Only use if you want to remove the mod from an ongoing save! Change to true (with the game closed), open the game → load the save → save → close the game → remove the mod → done. A save backup is recommended.");
+            invertedTillerConfig = Config.Bind("A) Various Settings", "Invert Tiller", false, "Invert the tiller controls (e.g. press left to go right)");
 
             //PATCHING
             Harmony harmony = new Harmony(pluginGuid);
