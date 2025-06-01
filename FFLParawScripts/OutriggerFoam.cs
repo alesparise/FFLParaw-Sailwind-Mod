@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace FFLParaw
+namespace FFLParawScripts
 {
     public class OutriggerFoam : MonoBehaviour
     {
@@ -63,7 +63,7 @@ namespace FFLParaw
             if (rb.velocity.magnitude > noFoamVelocity)
             {
                 foam.SetActive(value: true);
-                
+
                 enabledTimer = enabledDuration;
             }
         }

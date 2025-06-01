@@ -1,5 +1,4 @@
-﻿//using ShipyardExpansion;
-using Crest;
+﻿using Crest;
 using System;
 using System.IO;
 using System.Reflection;
@@ -21,6 +20,7 @@ namespace FFLParaw
         public static GameObject paraw;
         public static GameObject parawEmbark;
         public static GameObject tanjaM;
+        public static GameObject tanjaS;
 
         // PATCHES
         public static void StartPatch(FloatingOriginManager __instance)
@@ -57,49 +57,58 @@ namespace FFLParaw
             }
             return true;
         }
-        public static void ShipyardPosPatch(Shipyard __instance)
+        public static void ShipyardPatch(Shipyard __instance)
         {   //since the outriggers are pretty large, we need to adjust the release position of the shipyard, otherwise the boat gets stuck
             if (__instance.name == "shipyard Lagoon")
             {
-                __instance.shipReleasePosition.localPosition = new Vector3(12.8f, -1.4f , -20.2f);
+                __instance.shipReleasePosition.localPosition = new Vector3(12.8f, -1.4f, -20.2f);
+                Array.Resize(ref __instance.sailPrefabs, __instance.sailPrefabs.Length + 2);
+                __instance.sailPrefabs[__instance.sailPrefabs.Length - 2] = PrefabsDirectory.instance.sails[500]; //add the tanja medium sail to the shipyard
+                __instance.sailPrefabs[__instance.sailPrefabs.Length - 1] = PrefabsDirectory.instance.sails[501]; //add the tanja small sail to the shipyard
             }
+        }
+        public static void AddModdedSail()
+        {   //add modded sails to the directory
+
+            if (PrefabsDirectory.instance.sails.Length < 512) Array.Resize(ref PrefabsDirectory.instance.sails, 512);   //if the sails array has not been resized yet (by other mods), resize it to 512
+
+            PrefabsDirectory.instance.sails[500] = tanjaM;
+            PrefabsDirectory.instance.sails[501] = tanjaS;
         }
         public static void SailSetupPatch(Mast __instance)
         {   // set the inital sail to attach them
+
             if (__instance.shipRigidbody.name.StartsWith("FFL Paraw"))
             {   //if this is a mast on the paraw
-
-                GameObject[] sails = PrefabsDirectory.instance.sails;
-
-                if (sails.Length < 512)
-                {   //if the sails array has not been resized yet (by other mods), resize it to 512
-                    Array.Resize(ref sails, 512);
-                }
-
-                sails[500] = tanjaM;
-                PrefabsDirectory.instance.sails = sails;
-
-                Debug.LogWarning("PARAW: sails length: " + sails.Length + " prefabdir: " + PrefabsDirectory.instance.sails.Length);
-
                 if (__instance.name == "mast_main_0")
                 {
-                    __instance.startSailPrefab = sails[500];
+                    __instance.startSailPrefab = PrefabsDirectory.instance.sails[500];
+                }
+                if (__instance.name == "mast_mizzen_0")
+                {
+                    __instance.startSailPrefab = PrefabsDirectory.instance.sails[501];
                 }
             }
         }
         public static void SailSetupPatch2(Mast __instance)
-        {   //fixes the default rig's scale and install height
+        {   //fixes the default rig install height
             if (__instance.shipRigidbody.name.StartsWith("FFL Paraw"))
-            {   
+            {
                 if (__instance.name == "mast_main_0")
                 {
                     Sail sail = __instance.GetComponentInChildren<Sail>();
-                    sail.ChangeInstallHeight(-2.5f);    //starts at 12,2f
-                    sail.UpdateInstallPosition();       //target is 9,7f
+                    sail.ChangeInstallHeight(-2.3f);    //starts at 12,2f
+                    sail.UpdateInstallPosition();       //target is 9,9f
+                }
+                if (__instance.name == "mast_mizzen_0")
+                {
+                    Sail sail = __instance.GetComponentInChildren<Sail>();
+                    sail.ChangeInstallHeight(-5.1f);    //starts at 9,6f
+                    sail.UpdateInstallPosition();       //target is 4.5f
                 }
             }
         }
-        
+
         // HELPER METHODS
         public static void SetupThings()
         {   // loads all the mods stuff (assemblies and assets)
@@ -126,17 +135,39 @@ namespace FFLParaw
             paraw = bundle.LoadAsset<GameObject>(parawPath);
 
             //load sail prefab
-            string tanjaMediumPath = "Assets/Paraw/Sails/sail_tanja_medium.prefab";
+            //NOTE: additional sail setup is done in AddModdedSail() and SailSetupPatch() methods
+            //      You can't setup sails here, because the PrefabsDirectory is not initialized yet
+            string sailsPath = "Assets/Paraw/Sails";
+            string tanjaMediumPath = Path.Combine(sailsPath, "sail_tanja_medium.prefab");
+            string tanjaSmallPath = Path.Combine(sailsPath, "sail_tanja_small.prefab");
             tanjaM = bundle.LoadAsset<GameObject>(tanjaMediumPath);
-            tanjaM.GetComponentInChildren<ReefEffectAnimUniversal>();
+            tanjaS = bundle.LoadAsset<GameObject>(tanjaSmallPath);
 
-            //ADD COMPONENTS
-            AddComponents();
-            
+            //ADD CUSTOM COMPONENTS
+            //mostly added directly in unity or using bridge components right now
+            //but this is a good place to add them if needed
+
             //Set the region
             paraw.GetComponent<PurchasableBoat>().region = GameObject.Find("Region Emerald Lagoon").GetComponent<Region>();
 
             //Fix materials
+            FixMaterials();
+        }
+        public static void SetRotationAndPosition(GameObject boat, float yRot, Vector3 position)
+        {   //set the initial rotation of the boat
+            Transform t = boat.transform;
+            t.eulerAngles = new Vector3(0f, yRot, 0f);
+            t.position = position;
+        }
+        public static void SetMooring(Transform shiftingWorld)
+        {   //attach the initial mooring lines to the correct cleats in Kicia Bay for now
+            Transform fort = shiftingWorld.Find("island 27 Lagoon Shipyard");
+            BoatMooringRopes mr = paraw.GetComponent<BoatMooringRopes>();
+            mr.mooringFront = fort.Find("dock_mooring E (11)").transform;
+            mr.mooringBack = fort.Find("dock_mooring E (13)").transform;
+        }
+        private static void FixMaterials()
+        {   //fix the materials of the paraw prefab
             Transform parawTransform = paraw.transform;
             Transform parawModel = paraw.transform.Find("paraw");
             Transform outrigger = parawModel.Find("outrigger");
@@ -160,36 +191,6 @@ namespace FFLParaw
             parawModel.Find("water_damage").GetComponent<MeshRenderer>().sharedMaterial = MatLib.water4;
             parawModel.Find("splash_mask_reg").GetComponent<MeshRenderer>().sharedMaterial = MatLib.mask;
             parawModel.Find("splash_mask_ext").GetComponent<MeshRenderer>().sharedMaterial = MatLib.mask;
-            
-            //DEBUG:
-            //ShowWalkCols(); //this shows the WalkCols layer
-        }
-        public static void SetRotationAndPosition(GameObject boat, float yRot, Vector3 position)
-        {   //set the initial rotation of the boat
-            Transform t = boat.transform;
-            t.eulerAngles = new Vector3(0f, yRot, 0f);
-            t.position = position;
-        }
-        public static void SetMooring(Transform shiftingWorld)
-        {   //attach the initial mooring lines to the correct cleats in Kicia Bay for now
-            Transform fort = shiftingWorld.Find("island 27 Lagoon Shipyard");
-            BoatMooringRopes mr = paraw.GetComponent<BoatMooringRopes>();
-            mr.mooringFront = fort.Find("dock_mooring E (11)").transform;
-            mr.mooringBack = fort.Find("dock_mooring E (13)").transform;
-        }
-        private static void AddComponents()
-        {   //adds the components to the paraw prefab
-            Transform parawModel = paraw.GetComponentInChildren<BoatHorizon>().transform;
-            
-            //add outrigger component to the outriggers
-            Transform outrigger = parawModel.Find("outrigger");
-            Transform outriggerLeft = outrigger.Find("outrigger_left");
-            Transform outriggerRight = outrigger.Find("outrigger_right");
-
-            outriggerLeft.gameObject.AddComponent<Outrigger>();
-            outriggerRight.gameObject.AddComponent<Outrigger>();
-            outriggerLeft.gameObject.AddComponent<OutriggerFoam>();
-            outriggerRight.gameObject.AddComponent<OutriggerFoam>();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using System.Collections;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
@@ -24,7 +25,7 @@ namespace FFLParaw
         {
             //CONFIG FILE
             saveCleanerConfig = Config.Bind("A) Various Settings", "Save Cleaner", false, "Removes the saves dependency on this mod. Only use if you want to remove the mod from an ongoing save! Change to true (with the game closed), open the game → load the save → save → close the game → remove the mod → done. A save backup is recommended.");
-            
+
             //PATCHING
             Harmony harmony = new Harmony(pluginGuid);
 
@@ -48,10 +49,15 @@ namespace FFLParaw
             MethodInfo patchWake = AccessTools.Method(typeof(ParawPatches), "WakeObjectPatch");
             harmony.Patch(originalWake, new HarmonyMethod(patchWake));
 
-            //make sure the Paraw is dropped in the right place in the Kicia Shipyard
-            MethodInfo originalShipyardPos = AccessTools.Method(typeof(Shipyard), "DischargeShip");
-            MethodInfo patchShipyardPos = AccessTools.Method(typeof(ParawPatches), "ShipyardPosPatch");
+            //make sure the Paraw is dropped in the right place in the Kicia Shipyard, add sails to the shipyard
+            MethodInfo originalShipyardPos = AccessTools.Method(typeof(Shipyard), "Awake");
+            MethodInfo patchShipyardPos = AccessTools.Method(typeof(ParawPatches), "ShipyardPatch");
             harmony.Patch(originalShipyardPos, new HarmonyMethod(patchShipyardPos));
+
+            //add modded sails to the Directory
+            MethodInfo originalModSail = AccessTools.Method(typeof(PrefabsDirectory), "Start");
+            MethodInfo patchModSail = AccessTools.Method(typeof(ParawPatches), "AddModdedSail");
+            harmony.Patch(originalModSail, null, new HarmonyMethod(patchModSail));
 
             //CONDITIONAL PATCHES
             if (!saveCleanerConfig.Value)
@@ -78,8 +84,23 @@ namespace FFLParaw
                 harmony.Patch(originalLoad, new HarmonyMethod(patchLoad));
             }
         }
-        
+
         //DEBUG:
+        public void Update()
+        {   //debugging methods
+            if (Input.GetKeyDown(KeyCode.Keypad5))
+            {
+                StartCoroutine(QuickStart());
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad6))
+            {
+                ShowWalkCols();
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad4))
+            {
+                FindBelow();
+            }
+        }
         private void FindBelow()
         {   //debugging method to find the object below the player
             Transform player = Refs.ovrController.transform;
@@ -92,10 +113,25 @@ namespace FFLParaw
                 Debug.LogWarning("hit: " + raycastHit.collider.name);
             }
         }
-        public void ShowWalkCols()
+        private void ShowWalkCols()
         {   //debug method to show the walk cols
 
             Camera.main.cullingMask |= 1 << LayerMask.NameToLayer("WalkCols");
+        }
+        private IEnumerator QuickStart()
+        {   //debug method to quickly get to Kicia
+
+            PlayerGold.currency[0] = 1000000;
+            PlayerGold.currency[1] = 1000000;
+            PlayerGold.currency[2] = 1000000;
+            PlayerGold.currency[3] = 1000000;
+
+            PlayerNeeds.instance.godMode = true;
+
+            GameState.recovering = true;
+            Port.ports[22].teleportPlayer = true;
+            yield return new WaitForSeconds(1f);
+            GameState.recovering = false;
         }
     }
 }

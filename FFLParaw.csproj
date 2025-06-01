@@ -75,14 +75,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Outrigger.cs" />
-    <Compile Include="OutriggerFoam.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="ParawPatches.cs" />
     <Compile Include="IndexManager.cs" />
     <Compile Include="MatLib.cs" />
     <Compile Include="ParawMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SaveCleaner.cs" />
+    <Compile Include="Trapdoor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CHANGELOG.md" />

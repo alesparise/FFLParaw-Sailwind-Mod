@@ -4,13 +4,11 @@ namespace FFLParawScripts
 {
     public class ObjectToggler : MonoBehaviour
     {
-        [Header("Objects to be enabled with this")]
-        [Tooltip("Objects to enable when this is enabled. If this is disabled, they will be disabled too.")]
-        public GameObject[] enableWithThis; //objects to enable when this is enabled
+        public GameObject[] objectToEnable;
 
-        public void OnEnable()
-        {   //enable the objects when this is enabled
-            foreach (GameObject obj in enableWithThis)
+        private void OnEnable()
+        {   //enable all objects in the array
+            foreach (GameObject obj in objectToEnable)
             {
                 if (obj != null)
                 {
@@ -18,9 +16,9 @@ namespace FFLParawScripts
                 }
             }
         }
-        public void OnDisable()
-        {   //disable the objects when this is disabled
-            foreach (GameObject obj in enableWithThis)
+        private void OnDisable()
+        {   //disable all objects in the array
+            foreach (GameObject obj in objectToEnable)
             {
                 if (obj != null)
                 {

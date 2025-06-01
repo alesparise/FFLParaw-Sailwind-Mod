@@ -8,7 +8,7 @@ using UnityEngine;
 namespace FFLParaw
 {
     internal class IndexManager
-    {
+    {   
         private static bool updateSave;
         private static bool updateLegacySave;
 

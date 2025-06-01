@@ -1,14 +1,16 @@
 ﻿using UnityEngine;
 using Crest;
 
-namespace FFLParaw
+namespace FFLParawScripts
 {
     /// <summary>
     /// Controls the outrigger behaviour
     /// </summary>
     public class Outrigger : MonoBehaviour
     {
-        private GameObject foam;
+        public GameObject foam;
+        public GameObject interactionFront;    //interaction sphere at the front of the outrigger
+        public GameObject interactionBack;     //interaction sphere at the back of the outrigger
 
         private Transform boat;
         private Transform embarkCollider;
@@ -20,42 +22,49 @@ namespace FFLParaw
 
         private BoatPerformanceSwitcher bps;
 
-        private float forceMultiplier = 10f;
+        private Rudder rudder;
+
+        private float forceMultiplier = 5f;
         private float dampingMultiplier = 5f;
         private float magnitude;
         public float height;
+
+        private bool inWater => height < 0.8f;
 
         public void Awake()
         {
             boat = GetComponentInParent<BoatHorizon>().transform;
             embarkCollider = boat.GetComponentInChildren<BoatEmbarkCollider>().transform;
+            rudder = boat.GetComponentInChildren<Rudder>();
             rb = boat.parent.GetComponent<Rigidbody>();
-            t = transform;
-            foam = t.Find("WaterFoam").gameObject;
             bps = boat.parent.GetComponent<BoatPerformanceSwitcher>();
+
+            t = transform;
+
+            if (foam == null) foam = t.Find("WaterFoam").gameObject;
+            if (interactionFront == null) interactionFront = t.Find("WaterSphereLeftFront")?.gameObject ?? t.Find("WaterSphereRightFront").gameObject;
+            if (interactionBack == null) interactionBack = t.Find("WaterSphereLeftBack")?.gameObject ?? t.Find("WaterSphereRightBack").gameObject;
         }
         private void OnEnable()
         {   //widen the embark collider when the outriggers are installed
+            //lower rudder power when outriggers are installed
             embarkCollider.localScale = new Vector3(1f, 1.8f, 1f);
+            rudder.rudderPower = 60;
         }
         private void OnDisable()
         {   //revert the embark collider to its original size when the outriggers are removed
-            embarkCollider.localScale = new Vector3(1f, 1f, 1f);
+            //restore rudder power when outriggers are removed
+            embarkCollider.localScale = Vector3.one;
+            rudder.rudderPower = 80;
         }
         public void FixedUpdate()
         {
             if ((bool)bps && bps.performanceModeIsOn()) return;
-            
+
             //if (GameState.currentBoat != boat) return;
-            
+
             float waterHeight = OceanHeight.GetHeight(helper, t.position);  //get ocean height at the outrigger position
             height = t.position.y - waterHeight; //calculate the height of the outrigger above the water
-
-            if (height > 0.8f) return; //if the outrigger is above the water, do nothing
-            {
-                foam.SetActive(false);
-                
-            }
 
             //Calculate non linear force based on submersion level as y = forceMultiplier * x^2
             float submersion = 1 - Mathf.InverseLerp(0, 0.8f, height);  //0.8 is the height of the outrigger hull
@@ -70,21 +79,22 @@ namespace FFLParaw
             magnitude = buoyancy + damping;
 
             rb.AddForceAtPosition(Vector3.up * magnitude, t.position, ForceMode.Acceleration);
-            AdjustFoam();
+            AdjustWaterInteractions();
         }
-
-        private void AdjustFoam()
+        private void AdjustWaterInteractions()
         {   //adjust the foam based on the height of the outrigger
-            float waterHeight = OceanHeight.GetHeight(helper, t.position);
-            float height = t.position.y - waterHeight; //calculate the height of the outrigger above the water
-            if (height < 0.8f)
+
+            if (inWater && !interactionFront.activeInHierarchy)
             {   //if the outrigger is submerged, enable foam and adjust its position
                 foam.SetActive(true);
-                foam.transform.localPosition = new Vector3(0f, -height * 0.5f, 0f);
+                interactionFront.SetActive(true);
+                interactionBack.SetActive(true);
             }
-            else
+            else if (!inWater && interactionFront.activeInHierarchy)
             {   //if the outrigger is above the water, disable foam
                 foam.SetActive(false);
+                interactionFront.SetActive(false);
+                interactionBack.SetActive(false);
             }
         }
     }
