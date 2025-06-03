@@ -14,7 +14,7 @@ namespace FFLParaw
         public static string modFolder;
         public static readonly string[] assemblies = {
             "FFLParawScripts.dll",
-            "ShipyardLib.dll" };
+            /*"ShipyardLib.dll"*/ };
 
         public static AssetBundle bundle;
 
