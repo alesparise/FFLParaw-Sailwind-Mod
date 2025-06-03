@@ -12,8 +12,9 @@ namespace FFLParaw
     {
         // variables 
         public static string modFolder;
-        //public const string bridge = "DinghiesBridge.dll";      //the name of the .dll file containing the bridge components
-        public const string scripts = "FFLParawScripts.dll";    //the name of the .dll file containing the scripts components
+        public static readonly string[] assemblies = {
+            "FFLParawScripts.dll",
+            "ShipyardLib.dll" };
 
         public static AssetBundle bundle;
 
@@ -117,9 +118,12 @@ namespace FFLParaw
             modFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             //Load the scripts assembly where the script components are stored
-            string scriptsPath = Path.Combine(modFolder, scripts);
-            if (File.Exists(scriptsPath)) Assembly.LoadFrom(scriptsPath);
-            else Debug.LogError("FFLParaw: Couldn't load " + scripts + "!");
+            foreach (string assembly in assemblies)
+            {
+                string assemblyPath = Path.Combine(modFolder, assembly);
+                if (File.Exists(assemblyPath)) Assembly.LoadFrom(assemblyPath);
+                else Debug.LogError("FFLParaw: Couldn't load " + assembly + "!");
+            }
 
             //Load bundle
             string bundlePath = Path.Combine(modFolder, "paraw");

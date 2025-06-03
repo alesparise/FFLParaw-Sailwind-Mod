@@ -1,8 +1,9 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+//debug
+using Crest;
 using HarmonyLib;
 using System.Collections;
-using System.IO;
 using System.Reflection;
 using UnityEngine;
 //poorly written by pr0skynesis (discord username)
@@ -102,6 +103,34 @@ namespace FFLParaw
             {
                 FindBelow();
             }
+            if (Input.GetKeyDown(KeyCode.KeypadPlus))
+            {
+                ControlEngine(1);
+            }
+            if (Input.GetKeyDown(KeyCode.KeypadMinus))
+            {
+                ControlEngine(-1);
+            }
+            if (Input.GetKeyDown(KeyCode.KeypadMultiply))
+            {
+                ControlEngine(0);
+            }
+        }
+        private void ControlEngine(int val)
+        {
+            BoatProbes probes = GameState.currentBoat?.GetComponentInParent<BoatProbes>();
+
+            FieldInfo fieldInfo = AccessTools.Field(typeof(BoatProbes), "_enginePower");
+            float power = (float)fieldInfo.GetValue(probes);
+            if (val == 0)
+            {
+                fieldInfo.SetValue(probes, 0f);
+            }
+            else
+            {
+                power += val * 0.1f;
+                fieldInfo.SetValue(probes, power);
+            }
         }
         private void FindBelow()
         {   //debugging method to find the object below the player
@@ -109,8 +138,7 @@ namespace FFLParaw
             Debug.LogWarning("ovrController:" + player.name);
             Debug.LogWarning("ovrController.parent:" + player.parent.name);
 
-            RaycastHit raycastHit;
-            if (Physics.Raycast(player.position, Vector3.down, out raycastHit, 1.25f))
+            if (Physics.Raycast(player.position, Vector3.down, out RaycastHit raycastHit, 1.25f))
             {
                 Debug.LogWarning("hit: " + raycastHit.collider.name);
             }
@@ -121,14 +149,22 @@ namespace FFLParaw
             Camera.main.cullingMask |= 1 << LayerMask.NameToLayer("WalkCols");
         }
         private IEnumerator QuickStart()
-        {   //debug method to quickly get to Kicia
+        {   //debug method to quickly get to Kicia or only enable god mode if the boat is already bought instead
 
+            PlayerNeeds.food = 100;
+            PlayerNeeds.water = 100;
+            PlayerNeeds.sleep = 100;
+            PlayerNeeds.instance.godMode = true;
+            Sun.sun.globalTime = 8f;
+            PurchasableBoat[] boats = FindObjectsOfType<PurchasableBoat>();
+            foreach (PurchasableBoat boat in boats)
+            {
+                if (boat.name == "FFL Paraw" && boat.isPurchased()) yield break;
+            }
             PlayerGold.currency[0] = 1000000;
             PlayerGold.currency[1] = 1000000;
             PlayerGold.currency[2] = 1000000;
             PlayerGold.currency[3] = 1000000;
-
-            PlayerNeeds.instance.godMode = true;
 
             GameState.recovering = true;
             Port.ports[22].teleportPlayer = true;

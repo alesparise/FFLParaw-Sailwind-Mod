@@ -10,7 +10,6 @@ namespace FFLParaw
     internal class IndexManager
     {   
         private static bool updateSave;
-        private static bool updateLegacySave;
 
         public static Dictionary<string, int> loadedIndexMap = new Dictionary<string, int>();
         public static Dictionary<string, int> indexMap = new Dictionary<string, int>();
@@ -86,15 +85,7 @@ namespace FFLParaw
             {
                 //Debug.LogWarning("FFLParaw: BoatIndexManager: No mod data saved...");
             }
-            if (saveContainer.modData.ContainsKey(ParawMain.shortName + ".version"))
-            {
-                loadedVersion = saveContainer.modData[ParawMain.shortName + ".version"];
-                //check for version here if needed
-            }
-            else
-            {   //no version saved means the save is a legacy version and that we need to update it
-                updateLegacySave = true;
-            }
+            loadedVersion = saveContainer.modData[ParawMain.shortName + ".version"];
         }
         private static SaveContainer UpdateSave(SaveContainer saveContainer)
         {   //updates the indexes in the save if necessary
