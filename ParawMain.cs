@@ -33,24 +33,29 @@ namespace FFLParaw
             Harmony harmony = new Harmony(pluginGuid);
 
             //patch to manage indexes
-            MethodInfo original4 = AccessTools.Method(typeof(SaveLoadManager), "LoadGame");
-            MethodInfo patch4 = AccessTools.Method(typeof(IndexManager), "Manager");
-            harmony.Patch(original4, new HarmonyMethod(patch4));
+            //MethodInfo original4 = AccessTools.Method(typeof(SaveLoadManager), "LoadGame");
+            //MethodInfo patch4 = AccessTools.Method(typeof(IndexManager), "Manager");
+            //harmony.Patch(original4, new HarmonyMethod(patch4));
 
             //save modded indexes
-            MethodInfo original5 = AccessTools.Method(typeof(SaveLoadManager), "LoadModData");
-            MethodInfo patch5 = AccessTools.Method(typeof(IndexManager), "SaveIndex");
-            harmony.Patch(original5, new HarmonyMethod(patch5));
+            //MethodInfo original5 = AccessTools.Method(typeof(SaveLoadManager), "LoadModData");
+            //MethodInfo patch5 = AccessTools.Method(typeof(IndexManager), "SaveIndex");
+            //harmony.Patch(original5, new HarmonyMethod(patch5));
 
             //Save mod data on new game
-            MethodInfo original6 = AccessTools.Method(typeof(StartMenu), "StartNewGame");
-            MethodInfo patch6 = AccessTools.Method(typeof(IndexManager), "StartNewGamePatch");
-            harmony.Patch(original6, new HarmonyMethod(patch6));
+            //MethodInfo original6 = AccessTools.Method(typeof(StartMenu), "StartNewGame");
+            //MethodInfo patch6 = AccessTools.Method(typeof(IndexManager), "StartNewGamePatch");
+            //harmony.Patch(original6, new HarmonyMethod(patch6));
+
+            //Resize the boat indexes array
+            MethodInfo boatArrayOG = AccessTools.Method(typeof(SaveLoadManager), "Awake");
+            MethodInfo boatArrayP = AccessTools.Method(typeof(ParawPatches), "ResizeArrayPatch");
+            harmony.Patch(boatArrayOG, null, new HarmonyMethod(boatArrayP));
 
             //make sure the WakeAdjuster component initializes correctly
-            MethodInfo originalWake = AccessTools.Method(typeof(WakeAdjuster), "Awake");
-            MethodInfo patchWake = AccessTools.Method(typeof(ParawPatches), "WakeObjectPatch");
-            harmony.Patch(originalWake, new HarmonyMethod(patchWake));
+            //MethodInfo originalWake = AccessTools.Method(typeof(WakeAdjuster), "Awake");
+            //MethodInfo patchWake = AccessTools.Method(typeof(ParawPatches), "WakeObjectPatch");
+            //harmony.Patch(originalWake, new HarmonyMethod(patchWake));
 
             //make sure the Paraw is dropped in the right place in the Kicia Shipyard, add sails to the shipyard
             MethodInfo originalShipyardPos = AccessTools.Method(typeof(Shipyard), "Awake");

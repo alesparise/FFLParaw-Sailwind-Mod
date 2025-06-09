@@ -94,4 +94,7 @@
     <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /y "FFLParaw.dll" "C:\Games\Steam\steamapps\common\Sailwind\BepInEx\plugins\Paraw"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

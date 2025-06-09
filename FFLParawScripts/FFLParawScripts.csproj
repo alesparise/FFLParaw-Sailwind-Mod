@@ -75,7 +75,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeepKeel.cs" />
-    <Compile Include="ObjectToggler.cs" />
     <Compile Include="Outrigger.cs" />
     <Compile Include="OutriggerFoam.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -90,4 +89,8 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /y "FFLParawScripts.dll" "C:\Games\Steam\steamapps\common\Sailwind\BepInEx\plugins\Paraw"
+xcopy /y "FFLParawScripts.dll" "C:\Users\alesp\Desktop\Sailwind Modding\Sailwind 0.29\ExportedProject\Assets\Paraw\Scripts"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -9,8 +9,8 @@ namespace FFLParawScripts
     public class Outrigger : MonoBehaviour
     {
         public GameObject foam;
-        public GameObject interactionFront;    //interaction sphere at the front of the outrigger
-        public GameObject interactionBack;     //interaction sphere at the back of the outrigger
+        //public GameObject interactionFront;    //interaction sphere at the front of the outrigger
+        //public GameObject interactionBack;     //interaction sphere at the back of the outrigger
 
         private Transform boat;
         private Transform embarkCollider;
@@ -42,8 +42,8 @@ namespace FFLParawScripts
             t = transform;
 
             if (foam == null) foam = t.Find("WaterFoam").gameObject;
-            if (interactionFront == null) interactionFront = t.Find("WaterSphereLeftFront")?.gameObject ?? t.Find("WaterSphereRightFront").gameObject;
-            if (interactionBack == null) interactionBack = t.Find("WaterSphereLeftBack")?.gameObject ?? t.Find("WaterSphereRightBack").gameObject;
+            //if (interactionFront == null) interactionFront = t.Find("WaterSphereLeftFront")?.gameObject ?? t.Find("WaterSphereRightFront").gameObject;
+            //if (interactionBack == null) interactionBack = t.Find("WaterSphereLeftBack")?.gameObject ?? t.Find("WaterSphereRightBack").gameObject;
         }
         private void OnEnable()
         {   //widen the embark collider when the outriggers are installed
@@ -84,17 +84,17 @@ namespace FFLParawScripts
         private void AdjustWaterInteractions()
         {   //adjust the foam based on the height of the outrigger
 
-            if (inWater && !interactionFront.activeInHierarchy)
+            if (inWater /*&& !interactionFront.activeInHierarchy*/)
             {   //if the outrigger is submerged, enable foam and adjust its position
                 foam.SetActive(true);
-                interactionFront.SetActive(true);
-                interactionBack.SetActive(true);
+                //interactionFront.SetActive(true);
+                //interactionBack.SetActive(true);
             }
-            else if (!inWater && interactionFront.activeInHierarchy)
+            else if (!inWater /*&& interactionFront.activeInHierarchy*/)
             {   //if the outrigger is above the water, disable foam
                 foam.SetActive(false);
-                interactionFront.SetActive(false);
-                interactionBack.SetActive(false);
+                //interactionFront.SetActive(false);
+                //interactionBack.SetActive(false);
             }
         }
     }

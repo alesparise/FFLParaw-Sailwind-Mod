@@ -29,7 +29,7 @@ namespace FFLParaw
 
             SetupThings();
 
-            IndexManager.AssignAvailableIndex(paraw);
+            //IndexManager.AssignAvailableIndex(paraw); //disabled for now, going back to static indexes.
 
             Transform shiftingWorld = __instance.transform;
             SetMooring(shiftingWorld);
@@ -45,19 +45,26 @@ namespace FFLParaw
             Vector3 startPos = new Vector3(26025f, 0f, -71009f);
             SetRotationAndPosition(parawInstance, -70f, startPos);
         }
-        public static bool WakeObjectPatch(WakeAdjuster __instance, ref Rigidbody ___boat, ref SphereWaterInteraction ___interaction, ref Vector3 ___initialScale, ref float ___initialWeight)
-        {
-            if (__instance.gameObject.name.StartsWith("WaterSphere"))
-            { //hacky way to find my own WaterSpheres
-                ___boat = __instance.GetComponentInParent<Rigidbody>();
-                ___initialScale = __instance.transform.localScale;
-                ___interaction = __instance.GetComponent<SphereWaterInteraction>();
-                ___initialWeight = ___interaction._weight;
-
-                return false;
+        public static void ResizeArrayPatch(ref SaveableObject[] ___currentObjects)
+        {   //resize the currentobject array to fit the index of the paraw
+            if (SaveLoadManager.instance.GetCurrentObjects().Length < 1024)
+            {
+                Array.Resize(ref ___currentObjects, 1024);
             }
-            return true;
         }
+        //public static bool WakeObjectPatch(WakeAdjuster __instance, ref Rigidbody ___boat, ref SphereWaterInteraction ___interaction, ref Vector3 ___initialScale, ref float ___initialWeight)
+        //{   //no longer needed since I removed them from the outriggers
+        //    if (__instance.gameObject.name.StartsWith("WaterSphere"))
+        //    { //hacky way to find my own WaterSpheres
+        //        ___boat = __instance.GetComponentInParent<Rigidbody>();
+        //        ___initialScale = __instance.transform.localScale;
+        //        ___interaction = __instance.GetComponent<SphereWaterInteraction>();
+        //        ___initialWeight = ___interaction._weight;
+
+        //        return false;
+        //    }
+        //    return true;
+        //}
         public static void ShipyardPatch(Shipyard __instance)
         {   //since the outriggers are pretty large, we need to adjust the release position of the shipyard, otherwise the boat gets stuck
             if (__instance.name == "shipyard Lagoon")
@@ -184,10 +191,10 @@ namespace FFLParaw
             outriggerRight.Find("WaterFoam").GetComponent<MeshRenderer>().sharedMaterial = MatLib.foam;
             parawTransform.Find("WaterObjectInteractionSphereBack").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
             parawTransform.Find("WaterObjectInteractionSphereFront").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
-            outriggerLeft.Find("WaterSphereLeftBack").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
-            outriggerLeft.Find("WaterSphereLeftFront").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
-            outriggerRight.Find("WaterSphereRightBack").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
-            outriggerRight.Find("WaterSphereRightFront").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
+            //outriggerLeft.Find("WaterSphereLeftBack").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
+            //outriggerLeft.Find("WaterSphereLeftFront").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
+            //outriggerRight.Find("WaterSphereRightBack").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
+            //outriggerRight.Find("WaterSphereRightFront").GetComponent<MeshRenderer>().sharedMaterial = MatLib.objectInteraction;
             parawTransform.Find("overflow_left").GetComponent<Renderer>().sharedMaterial = MatLib.overflow;
             parawTransform.Find("overflow_right").GetComponent<Renderer>().sharedMaterial = MatLib.overflow;
             parawModel.Find("water_mask_reg").GetComponent<MeshRenderer>().sharedMaterial = MatLib.convexHull;
